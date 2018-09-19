@@ -21,12 +21,13 @@ import com.abdulaziz.jakmalltest.utils.visible
 import com.abdulaziz.submission4.api.ApiInterface
 import com.google.gson.Gson
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.support.v4.onRefresh
 import org.jetbrains.anko.support.v4.swipeRefreshLayout
 
-class MainActivity : AppCompatActivity(), MainView {
+class MainActivity : AppCompatActivity(), MainView, MainAdapter.TextListener {
 
     private lateinit var apiService: ApiInterface
     private lateinit var presenter: MainPresenter
@@ -94,16 +95,9 @@ class MainActivity : AppCompatActivity(), MainView {
             }
         }
 
-        adapter = MainAdapter(this, randomTextList) { randomText, positionItem ->
-            val toBeFirst = randomTextList[positionItem]
-            randomTextList.removeAt(positionItem)
-            randomTextList.reverse()
-            randomTextList.add(toBeFirst)
-            randomTextList.reverse()
-            adapter.notifyDataSetChanged()
-            // Belum menemukan LinkedList di kotlin
-        }
 
+
+        adapter = MainAdapter(this, randomTextList, this)
         rvListText.adapter = adapter
 
         apiService = getAPIService()
@@ -113,6 +107,19 @@ class MainActivity : AppCompatActivity(), MainView {
         swipeRefresh.onRefresh {
             presenter.getDataRandomText()
         }
+    }
+
+    override fun onImgClick(randomText: RandomText, position: Int) {
+        val toBeFirst = randomTextList[position]
+        randomTextList.removeAt(position)
+        randomTextList.reverse()
+        randomTextList.add(toBeFirst)
+        randomTextList.reverse()
+        adapter.notifyDataSetChanged()
+    }
+
+    override fun onViewClick(randomText: RandomText, position: Int) {
+        alert(Appcompat, randomText.joke).show()
     }
 
     override fun showLoading() {
